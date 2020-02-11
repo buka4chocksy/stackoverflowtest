@@ -24,6 +24,6 @@ exports.authenticate = function (req, res, next) {
 
         })
     } else {
-        res.status(401).send({ success: false, message: "No token provided" });
+        res.status(401).send({ success: false, message: "Please login to complete this process" });
     }
 }
