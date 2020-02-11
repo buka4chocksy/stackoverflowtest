@@ -20,4 +20,22 @@ module.exports = function questionController(){
         .then(data => res.status(200).send(data))
         .catch(err => res.status(500).send(err));
     }
+
+    this.voteQuestion =(req,res)=>{
+        questionService.UpvoteQuestion(req.params.id , req.auth.Id)
+        .then(data => res.status(200).send(data))
+        .catch(err => res.status(500).send(err));
+    }
+
+    this.downVoteQuestion =(req,res)=>{
+        questionService.downVoteQuestion(req.params.id , req.auth.Id)
+        .then(data => res.status(200).send(data))
+        .catch(err => res.status(500).send(err));
+    }
+    this.search =(req,res)=>{
+        var option = req.body.search;
+        questionService.Search(option)
+        .then(data => res.status(200).send(data))
+        .catch(err => res.status(500).send(err));
+    }
 }
