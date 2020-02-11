@@ -1,4 +1,5 @@
 var questionModel = require("../Model/question");
+var mailer = require('../Middleware/mailer');
 //Ask Question
 exports.askQuestion = (data, id) => {
   return new Promise((resolve, reject) => {
@@ -76,7 +77,15 @@ exports.AnswerQuestion = (questionId, message, userId) => {
             )
             .then(answered => {
               if (answered) {
-                resolve({ success: true, message: "Question was answered " });
+                  mailSubscribers(questionId , message).then(got =>{
+                      if(got){
+                          resolve({ success: true, message: "Question was answered "  , data:got});
+                      }else{
+                        resolve({success:false , message:'Error encountered'})
+                      }
+                  }).catch(err =>{
+                    reject(err)
+                  })
               } else {
                 resolve({
                   success: false,
@@ -380,5 +389,57 @@ exports.Search = (option)=> {
                     resolve({ success: true, data: found, message: "" });
                 }
             })
+    })
+}
+
+//subscribe to question
+exports.subscribeToQuestion = (id ,questionId)=>{
+    return new Promise((resolve , reject)=>{
+        questionModel.findOne({subscribedUsers:id}).then(found =>{
+            if(found){
+                resolve({success:false , message:'Sorry seems you already subscribed to this question '})
+            }else{
+                questionModel.findOneAndUpdate({_id:questionId}, {$push:{subscribedUsers:id}}).then(subscribed =>{
+                    if(subscribed){
+                        resolve({success:true , message:'you subscribed to this question successfully !!'})
+                    }else{
+                        resolve({success:false , message:'Error encountered while subscribing to question !!'})
+                    }
+                })
+            }
+        }).catch(err =>{
+            reject(err);
+        })
+    })
+}
+
+//Sends mail to subscriber of a question
+function mailSubscribers  (questionId,answer){
+    return new Promise((resolve , reject)=>{
+        questionModel.findOne({_id:questionId} ,{question:0 ,userId:0 ,upVote:0 ,upVoteCount:0 ,downVote:0 ,downVoteCount:0})
+        .populate({
+            path: "subscribedUsers",
+            model: "auth",
+            select: { _id: 0, __v: 0 }
+          }).exec((err , result)=>{
+            if(err)reject(err);
+            if(result){
+              var questionTitle  = result.title 
+                var subscribers = result.subscribedUsers
+                var mail = subscribers.map(e => e.email)
+                 var singleMail = mail.toString()
+                mailer.mailIUser(singleMail ,answer , questionTitle ).then(sent =>{
+                    if(sent){
+                        resolve({success:true , message:sent})
+                    }else{
+                        resolve({success:false , message:'Error Sending mail'})
+                    }
+                }).catch(err =>{
+                  reject(err);
+                })
+            }else{
+                resolve({success:false , message:'nothing found'});
+            }
+          })
     })
 }
