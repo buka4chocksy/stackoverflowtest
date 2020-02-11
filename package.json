@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@sendgrid/mail": "^6.5.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
@@ -11,21 +12,19 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.8.11",
     "morgan": "^1.9.1",
+    "nodemailer": "^6.4.2",
     "nodemon": "^2.0.2",
     "normalize-port": "^1.0.0"
   },
-  "scripts": {
-    "start": "node server.js"
-  },
-  "name": "stackoverflow",
-  "version": "1.0.0",
-  "description": "stackOverflow question and answer portal",
-  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon ./bin/www",
     "watch": "nodemon ./bin/www"
   },
+  "name": "stackoverflow",
+  "version": "1.0.0",
+  "description": "stackOverflow question and answer portal",
+  "main": "server.js",
   "bin": {
     "stackoverflow": "www.js"
   },
