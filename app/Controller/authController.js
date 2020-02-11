@@ -16,4 +16,11 @@ var service = require('../Service/authService');
             res.json(err);
         })
     }
+
+    this.search =(req,res)=>{
+        var option = req.body.search;
+        service.Search(option)
+        .then(data => res.status(200).send(data))
+        .catch(err => res.status(500).send(err));
+    }
 }
