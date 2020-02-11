@@ -95,6 +95,22 @@ function getUserDetail(user, Id) {
   });
 }
 
+
+//Search user  via email , username
+exports.Search = (option)=> {
+  return new Promise((resolve, reject) => {
+    model.find({$or:[{ email: { $regex: option, $options: 'i' } },{ userName: { $regex: option, $options: 'i' } }] } ,{password:0})
+          .exec((err, found) => {
+              if (err) { reject(err); }
+              if (found == null || Object.keys(found).length === 0) {
+                  resolve({ success: false, data: {}, message: "We could not find what you are looking for." })
+              } else {
+                  resolve({ success: true, data: found, message: "" });
+              }
+          })
+  })
+}
+
 function generateToken(data = {}) {
   return new Promise((resolve, reject) => {
     jwt.sign({ ...data }, secret, { expiresIn: "24hrs" }, function(err, token) {
