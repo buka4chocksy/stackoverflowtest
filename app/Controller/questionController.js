@@ -38,4 +38,10 @@ module.exports = function questionController(){
         .then(data => res.status(200).send(data))
         .catch(err => res.status(500).send(err));
     }
+
+    this.subscribeToQuestion =(req,res)=>{
+        questionService.subscribeToQuestion(req.auth.Id,req.params.id )
+        .then(data => res.status(200).send(data))
+        .catch(err => res.status(500).send(err));
+    }
 }
