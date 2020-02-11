@@ -9,8 +9,15 @@ var questionSchema = new schema({
         timeCreated:{type:Date}
     }],
     userId: { type: mongoose.Types.ObjectId, ref: 'auth', autopopulate: true },
-    upVote:[{ type: mongoose.Types.ObjectId, ref: 'auth', autopopulate: true }],
-    downVote:[{ type: mongoose.Types.ObjectId, ref: 'auth', autopopulate: true }],
+    upVote:[{
+        userId: { type: mongoose.Types.ObjectId, ref: 'auth', autopopulate: true },
+    }],
+    upVoteCount:{type:Number},
+    downVote:[{
+        userId: { type: mongoose.Types.ObjectId, ref: 'auth', autopopulate: true },
+    }],
+    downVoteCount:{type:Number},
+
     subscribedUsers:[{ type: mongoose.Types.ObjectId, ref: 'auth', autopopulate: true }],
     timeCreated:{type:Date}
 
