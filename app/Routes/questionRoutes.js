@@ -10,6 +10,7 @@ module.exports = function(){
     router.post('/vote/:id', middleWare.authenticate ,  questionCtrl.voteQuestion);
     router.post('/downvote/:id', middleWare.authenticate ,  questionCtrl.downVoteQuestion);
     router.post('/subscribe/:id', middleWare.authenticate ,  questionCtrl.subscribeToQuestion);
+    router.delete('/:id', middleWare.authenticate ,  questionCtrl.deleteQuestion);
 
     return router;
 }
