@@ -6,7 +6,7 @@ This is project is an Api project test which was aimed at cloning the stackoverf
 
 * Clone the project into your local machine
 * Cd into the project directory
-* Install all dependencies used for the development of the project by either  using yarn or npm by typing *npm install* or *yarn add *
+* Install all dependencies used for the development of the project by either  using yarn or npm by typing *npm install* or *yarn add*
 * Create a .env file in the root folder where you will declare you secret word for the Jwt , DB url ,SendGrid Api
 * Start the project by running the command *npm start*
 
