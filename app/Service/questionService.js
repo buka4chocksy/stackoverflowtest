@@ -1,5 +1,5 @@
 var questionModel = require("../Model/question");
-var mailer = require('../Middleware/mailer');
+var mailer = require("../Middleware/mailer");
 //Ask Question
 exports.askQuestion = (data, id) => {
   return new Promise((resolve, reject) => {
@@ -40,8 +40,16 @@ exports.getAllQuestions = (pagenumber = 1, pagesize = 20) => {
         model: "auth",
         select: { _id: 0, __v: 0, password: 0 }
       })
-      .populate({ path: "upVote.userId", model: "auth", select: { _id: 0, __v: 0 , password:0 } })
-      .populate({ path: "downVote.userId", model: "auth", select: { _id: 0, __v: 0 , password:0 } })
+      .populate({
+        path: "upVote.userId",
+        model: "auth",
+        select: { _id: 0, __v: 0, password: 0 }
+      })
+      .populate({
+        path: "downVote.userId",
+        model: "auth",
+        select: { _id: 0, __v: 0, password: 0 }
+      })
       .populate({
         path: "subscribedUsers",
         model: "auth",
@@ -77,15 +85,21 @@ exports.AnswerQuestion = (questionId, message, userId) => {
             )
             .then(answered => {
               if (answered) {
-                  mailSubscribers(questionId , message).then(got =>{
-                      if(got){
-                          resolve({ success: true, message: "Question was answered "  , data:got});
-                      }else{
-                        resolve({success:false , message:'Error encountered'})
-                      }
-                  }).catch(err =>{
-                    reject(err)
+                mailSubscribers(questionId, message)
+                  .then(got => {
+                    if (got) {
+                      resolve({
+                        success: true,
+                        message: "Question was answered ",
+                        data: got
+                      });
+                    } else {
+                      resolve({ success: false, message: "Error encountered" });
+                    }
                   })
+                  .catch(err => {
+                    reject(err);
+                  });
               } else {
                 resolve({
                   success: false,
@@ -378,68 +392,128 @@ exports.downVoteQuestion = (questionId, userId) => {
 };
 
 //Search via title , question and answers
-exports.Search = (option)=> {
-    return new Promise((resolve, reject) => {
-        questionModel.find({$or:[{ title: { $regex: option, $options: 'i' } },{ question: { $regex: option, $options: 'i' } },{ "answers.answer": { $regex: option, $options: 'i' } }] })
-            .exec((err, found) => {
-                if (err) { reject(err); }
-                if (found == null || Object.keys(found).length === 0) {
-                    resolve({ success: false, data: {}, message: "We could not find what you are looking for." })
-                } else {
-                    resolve({ success: true, data: found, message: "" });
-                }
-            })
-    })
-}
+exports.Search = option => {
+  return new Promise((resolve, reject) => {
+    questionModel
+      .find({
+        $or: [
+          { title: { $regex: option, $options: "i" } },
+          { question: { $regex: option, $options: "i" } },
+          { "answers.answer": { $regex: option, $options: "i" } }
+        ]
+      })
+      .exec((err, found) => {
+        if (err) {
+          reject(err);
+        }
+        if (found == null || Object.keys(found).length === 0) {
+          resolve({
+            success: false,
+            data: {},
+            message: "We could not find what you are looking for."
+          });
+        } else {
+          resolve({ success: true, data: found, message: "" });
+        }
+      });
+  });
+};
 
 //subscribe to question
-exports.subscribeToQuestion = (id ,questionId)=>{
-    return new Promise((resolve , reject)=>{
-        questionModel.findOne({subscribedUsers:id}).then(found =>{
-            if(found){
-                resolve({success:false , message:'Sorry seems you already subscribed to this question '})
-            }else{
-                questionModel.findOneAndUpdate({_id:questionId}, {$push:{subscribedUsers:id}}).then(subscribed =>{
-                    if(subscribed){
-                        resolve({success:true , message:'you subscribed to this question successfully !!'})
-                    }else{
-                        resolve({success:false , message:'Error encountered while subscribing to question !!'})
-                    }
-                })
-            }
-        }).catch(err =>{
-            reject(err);
-        })
-    })
-}
+exports.subscribeToQuestion = (id, questionId) => {
+  return new Promise((resolve, reject) => {
+    questionModel
+      .findOne({ subscribedUsers: id })
+      .then(found => {
+        if (found) {
+          resolve({
+            success: false,
+            message: "Sorry seems you already subscribed to this question "
+          });
+        } else {
+          questionModel
+            .findOneAndUpdate(
+              { _id: questionId },
+              { $push: { subscribedUsers: id } }
+            )
+            .then(subscribed => {
+              if (subscribed) {
+                resolve({
+                  success: true,
+                  message: "you subscribed to this question successfully !!"
+                });
+              } else {
+                resolve({
+                  success: false,
+                  message: "Error encountered while subscribing to question !!"
+                });
+              }
+            });
+        }
+      })
+      .catch(err => {
+        reject(err);
+      });
+  });
+};
 
 //Sends mail to subscriber of a question
-function mailSubscribers  (questionId,answer){
-    return new Promise((resolve , reject)=>{
-        questionModel.findOne({_id:questionId} ,{question:0 ,userId:0 ,upVote:0 ,upVoteCount:0 ,downVote:0 ,downVoteCount:0})
-        .populate({
-            path: "subscribedUsers",
-            model: "auth",
-            select: { _id: 0, __v: 0 }
-          }).exec((err , result)=>{
-            if(err)reject(err);
-            if(result){
-              var questionTitle  = result.title 
-                var subscribers = result.subscribedUsers
-                var mail = subscribers.map(e => e.email)
-                 var singleMail = mail.toString()
-                mailer.mailIUser(singleMail ,answer , questionTitle ).then(sent =>{
-                    if(sent){
-                        resolve({success:true , message:sent})
-                    }else{
-                        resolve({success:false , message:'Error Sending mail'})
-                    }
-                }).catch(err =>{
-                  reject(err);
-                })
-            }else{
-                resolve({success:false , message:'nothing found'});
-            }
-          })
+function mailSubscribers(questionId, answer) {
+  return new Promise((resolve, reject) => {
+    questionModel
+      .findOne(
+        { _id: questionId },
+        {
+          question: 0,
+          userId: 0,
+          upVote: 0,
+          upVoteCount: 0,
+          downVote: 0,
+          downVoteCount: 0
+        }
+      )
+      .populate({
+        path: "subscribedUsers",
+        model: "auth",
+        select: { _id: 0, __v: 0 }
+      })
+      .exec((err, result) => {
+        if (err) reject(err);
+        if (result) {
+          var questionTitle = result.title;
+          var subscribers = result.subscribedUsers;
+          var mail = subscribers.map(e => e.email);
+          var singleMail = mail.toString();
+          mailer
+            .mailIUser(singleMail, answer, questionTitle)
+            .then(sent => {
+              if (sent) {
+                resolve({ success: true, message: sent });
+              } else {
+                resolve({ success: false, message: "Error Sending mail" });
+              }
+            })
+            .catch(err => {
+              reject(err);
+            });
+        } else {
+          resolve({ success: false, message: "nothing found" });
+        }
+      });
+  });
+}
+
+
+exports.deleteQuestion = (userId, questionId)=>{
+  return new Promise((resolve , reject)=>{
+    questionModel.findOneAndRemove({_id:questionId , userId:userId}).then(deleted =>{
+      if(deleted){
+        resolve({success:true , message:'Question deleted successfully !!!'})
+      }else{
+        resolve({success:false , message:'Error encountered while deleting question !!!'})
+      }
+    }).catch(err =>{
+      reject(err);
     })
+  })
 }
